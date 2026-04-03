@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobirecTech | Check Application Status</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh;
+        }
+        
+        .navbar { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            padding: 15px 0; 
+            position: fixed; 
+            width: 100%; 
+            top: 0; 
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .navbar-brand { 
+            font-weight: 700; 
+            font-size: 1.5rem; 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+            color: transparent; 
+        }
+        
+        .status-section { padding: 120px 0 80px; }
+        .status-card { 
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(10px); 
+            border-radius: 30px; 
+            padding: 40px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+            max-width: 850px; 
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+        .status-header { text-align: center; margin-bottom: 30px; }
+        .status-header h2 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text; 
+            color: transparent; 
+            margin-bottom: 10px;
+        }
+        
+        .search-box { 
+            background: #f8f9fa; 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 30px;
+            border: 1px solid rgba(102,126,234,0.2);
+        }
+        .search-tabs { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 25px; 
+            border-bottom: 2px solid #e0e0e0; 
+            padding-bottom: 10px; 
+        }
+        .search-tab { 
+            padding: 10px 25px; 
+            cursor: pointer; 
+            border-radius: 30px; 
+            font-weight: 600; 
+            transition: all 0.3s ease;
+            color: #555;
+        }
+        .search-tab.active { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+        .search-tab:hover:not(.active) { 
+            background: #e0e0e0; 
+            transform: translateY(-2px);
+        }
+        .search-form { display: none; }
+        .search-form.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group-custom i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 1.1rem;
+            z-index: 2;
+        }
+        .form-control-custom {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .form-control-custom:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        
+        .btn-check-custom { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            border: none; 
+            padding: 14px 30px; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            width: 100%;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-check-custom:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(102,126,234,0.4); 
+        }
+        .btn-check-custom:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-top: 20px; 
+            border-left: 5px solid; 
+            display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .result-card.show { 
+            display: block; 
+            animation: slideIn 0.5s ease; 
+        }
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .status-pending { border-left-color: #f8961e; }
+        .status-accepted { border-left-color: #43e97b; }
+        .status-rejected { border-left-color: #f72585; }
+        
+        .status-badge { 
+            padding: 8px 25px; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        .badge-pending { background: #f8961e; color: white; }
+        .badge-accepted { background: #43e97b; color: white; }
+        .badge-rejected { background: #f72585; color: white; }
+        
+        .token-badge {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: monospace;
+            letter-spacing: 1px;
+            color: white;
+            display: inline-block;
+        }
+        
+        .info-row { 
+            display: flex; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #f0f0f0; 
+        }
+        .info-label { 
+            width: 140px; 
+            font-weight: 600; 
+            color: #555; 
+        }
+        .info-value { 
+            flex: 1; 
+            color: #333; 
+        }
+        
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+        
+        .footer { 
+            background: #1a1a2e; 
+            color: white; 
+            padding: 30px 0; 
+            margin-top: 50px; 
+            text-align: center; 
+        }
+        
+        @media (max-width: 768px) {
+            .status-card { margin: 0 15px; padding: 25px; }
+            .info-row { flex-direction: column; }
+            .info-label { width: 100%; margin-bottom: 5px; }
+            .search-tab { padding: 8px 15px; font-size: 0.9rem; }
+        }
+        
+        .help-text {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        .instruction-box {
+            background: #e8f0fe;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">MobirecTech</a>
+            <div>
+                <a href="index.html" class="btn btn-outline-primary btn-sm">Home</a>
+                <a href="index.html#job-apply" class="btn btn-outline-primary btn-sm ms-2">Apply Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="status-section">
+        <div class="container">
+            <div class="status-card">
+                <div class="status-header">
+                    <h2><i class="fas fa-search"></i> Check Application Status</h2>
+                    <p class="text-muted">Enter your Token ID or Mobile Number to check your job application status</p>
+                </div>
+
+                <div class="search-box">
+                    <div class="search-tabs">
+                        <div class="search-tab active" data-tab="token">Token ID</div>
+                        <div class="search-tab" data-tab="mobile">Mobile Number</div>
+                    </div>
+
+                    <div id="tokenSearch" class="search-form active">
+                        <div class="input-group-custom">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text" id="tokenId" class="form-control-custom" placeholder="Enter Token ID (e.g., MRTXXXXXXXXX)">
+                        </div>
+                        <button class="btn-check-custom" id="searchByTokenBtn">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Token ID is provided via SMS after application submission
+                        </div>
+                    </div>
+
+                    <div id="mobileSearch" class="search-form">
+                        <div class="input-group-custom">
+                            <i class="fas fa-phone-alt"></i>
+                            <input type="tel" id="mobileNumber" class="form-control-custom" placeholder="Enter 10-digit mobile number">
+                        </div>
+                        <button class="btn-check-custom" id="searchByMobileBtn">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Enter the mobile number used during application
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultCard" class="result-card">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <span id="statusBadge" class="status-badge badge-pending">Loading...</span>
+                    </div>
+                    <div id="applicationDetails"></div>
+                    <div class="text-center mt-4">
+                        <a href="index.html#job-apply" class="btn btn-outline-primary">
+                            <i class="fas fa-briefcase"></i> Apply for New Job
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="instruction-box">
+                    <i class="fas fa-envelope"></i> <strong>How to get your Token ID?</strong><br>
+                    After submitting job application, you will receive an SMS with your unique Token ID. You can also check your application status using your registered mobile number.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 MobirecTech. All Rights Reserved.</p>
+            <p class="mt-2">Developed with <i class="fas fa-heart" style="color: #f72585;"></i> by MobirecTech Team</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9AiscgvOeUDv0h5rPHwTaFDsXgwfO8W4",
+            authDomain: "mobtech-5ceac.firebaseapp.com",
+            projectId: "mobtech-5ceac",
+            storageBucket: "mobtech-5ceac.firebasestorage.app",
+            messagingSenderId: "989743281667",
+            appId: "1:989743281667:web:1d8b3249571d518d364036"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Get DOM elements
+        const searchByTokenBtn = document.getElementById('searchByTokenBtn');
+        const searchByMobileBtn = document.getElementById('searchByMobileBtn');
+        const tokenIdInput = document.getElementById('tokenId');
+        const mobileInput = document.getElementById('mobileNumber');
+        const resultCard = document.getElementById('resultCard');
+        const applicationDetails = document.getElementById('applicationDetails');
+        const statusBadge = document.getElementById('statusBadge');
+        
+        // Escape HTML helper
+        function escapeHtml(text) {
+            if (!text) return 'N/A';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show loading state
+        function showLoading() {
+            resultCard.classList.remove('show');
+            statusBadge.innerHTML = '<span class="status-badge badge-pending"><i class="fas fa-spinner fa-spin"></i> Searching...</span>';
+            applicationDetails.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching database...</div>';
+            resultCard.classList.add('show');
+        }
+        
+        // Show not found message
+        function showNotFound(message) {
+            resultCard.classList.remove('status-pending', 'status-accepted', 'status-rejected');
+            resultCard.classList.add('show');
+            statusBadge.innerHTML = '<span class="status-badge badge-pending">NOT FOUND</span>';
+            applicationDetails.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(message)}</div>`;
+        }
+        
+        // Show error message
+        function showError(message) {
+            resultCard.classList.remove('status-pending', 'status-accepted', 'status-rejected');
+            resultCard.classList.add('show');
+            statusBadge.innerHTML = '<span class="status-badge badge-pending">ERROR</span>';
+            applicationDetails.innerHTML = `<div class="alert alert-danger text-center"><i class="fas fa-exclamation-circle"></i> ${escapeHtml(message)}</div>`;
+            setTimeout(() => {
+                resultCard.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Display single result
+        function displayResult(app, docId) {
+            const status = app.status || 'pending';
+            const statusClass = status === 'accepted' ? 'badge-accepted' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+            const resultClass = status === 'accepted' ? 'status-accepted' : (status === 'rejected' ? 'status-rejected' : 'status-pending');
+            
+            statusBadge.innerHTML = `<span class="status-badge ${statusClass}">${status.toUpperCase()}</span>`;
+            resultCard.className = `result-card show ${resultClass}`;
+            
+            const tokenId = app.tokenId || app.applicationId || docId?.slice(0, 12) || 'N/A';
+            const diplomaInfo = app.diploma === 'Yes' ? `${app.diploma}${app.diplomaCourse ? ` - ${app.diplomaCourse}` : ''}` : (app.diploma || 'No');
+            const appliedDate = app.appliedDate ? new Date(app.appliedDate).toLocaleString() : 'N/A';
+            
+            let statusMessage = '';
+            if (status === 'accepted') {
+                statusMessage = '<span class="text-success"><i class="fas fa-check-circle"></i> Congratulations! Your application has been accepted. Our team will contact you soon for further process.</span>';
+            } else if (status === 'rejected') {
+                statusMessage = '<span class="text-danger"><i class="fas fa-times-circle"></i> Sorry, your application was not selected at this time. Keep applying for future opportunities!</span>';
+            } else {
+                statusMessage = '<span class="text-warning"><i class="fas fa-clock"></i> Your application is under review. Please wait for admin response. You will receive SMS notification when status updates.</span>';
+            }
+            
+            applicationDetails.innerHTML = `
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-id-card"></i> Token ID:</div>
+                    <div class="info-value"><span class="token-badge">${escapeHtml(tokenId)}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-user"></i> Full Name:</div>
+                    <div class="info-value"><strong>${escapeHtml(app.fullName || app.applicantName || 'N/A')}</strong></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-user-friends"></i> Father's Name:</div>
+                    <div class="info-value">${escapeHtml(app.fatherName || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-user-friends"></i> Mother's Name:</div>
+                    <div class="info-value">${escapeHtml(app.motherName || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-phone-alt"></i> Mobile Number:</div>
+                    <div class="info-value">${escapeHtml(app.mobile || app.contactNumber || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-envelope"></i> Email:</div>
+                    <div class="info-value">${escapeHtml(app.email || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-map-marker-alt"></i> Address:</div>
+                    <div class="info-value">${escapeHtml(app.address || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-briefcase"></i> Applied Position:</div>
+                    <div class="info-value">${escapeHtml(app.jobPosition || app.position || 'N/A')}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-graduation-cap"></i> Diploma/Course:</div>
+                    <div class="info-value">${escapeHtml(diplomaInfo)}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-calendar-alt"></i> Application Date:</div>
+                    <div class="info-value">${appliedDate}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-file-alt"></i> Resume/CV:</div>
+                    <div class="info-value">${app.proofUrl ? `<a href="${app.proofUrl}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i> View Resume</a>` : 'Not Provided'}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-info-circle"></i> Status Message:</div>
+                    <div class="info-value">${statusMessage}</div>
+                </div>
+            `;
+        }
+        
+        // Display multiple results (if multiple applications found for same mobile)
+        function displayMultipleResults(applications) {
+            resultCard.classList.remove('status-pending', 'status-accepted', 'status-rejected');
+            resultCard.classList.add('show');
+            statusBadge.innerHTML = `<span class="status-badge badge-pending">${applications.length} APPLICATIONS FOUND</span>`;
+            
+            let resultsHtml = '';
+            applications.forEach((app, index) => {
+                const status = app.status || 'pending';
+                const statusClass = status === 'accepted' ? 'badge-accepted' : (status === 'rejected' ? 'badge-rejected' : 'badge-pending');
+                const resultClass = status === 'accepted' ? 'status-accepted' : (status === 'rejected' ? 'status-rejected' : 'status-pending');
+                const tokenId = app.tokenId || app.applicationId || 'N/A';
+                const appliedDate = app.appliedDate ? new Date(app.appliedDate).toLocaleString() : 'N/A';
+                
+                resultsHtml += `
+                    <div class="result-card show ${resultClass}" style="margin-bottom: 20px; border-left: 5px solid;">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span class="status-badge ${statusClass}">${status.toUpperCase()}</span>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-id-card"></i> Token ID:</div>
+                            <div class="info-value"><span class="token-badge">${escapeHtml(tokenId)}</span></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-user"></i> Full Name:</div>
+                            <div class="info-value"><strong>${escapeHtml(app.fullName || app.applicantName || 'N/A')}</strong></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-briefcase"></i> Position:</div>
+                            <div class="info-value">${escapeHtml(app.jobPosition || app.position || 'N/A')}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-calendar-alt"></i> Applied Date:</div>
+                            <div class="info-value">${appliedDate}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-info-circle"></i> Status:</div>
+                            <div class="info-value">
+                                ${status === 'accepted' ? '<span class="text-success"><i class="fas fa-check-circle"></i> Accepted - Our team will contact you</span>' : 
+                                  status === 'rejected' ? '<span class="text-danger"><i class="fas fa-times-circle"></i> Rejected - Not selected</span>' : 
+                                  '<span class="text-warning"><i class="fas fa-clock"></i> Pending - Under review</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            applicationDetails.innerHTML = resultsHtml;
+        }
+        
+        // Search by Token ID
+        async function searchByTokenId() {
+            const tokenId = tokenIdInput.value.trim().toUpperCase();
+            
+            if (!tokenId) {
+                showError('Please enter Token ID');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // Search in jobApplications collection where tokenId matches
+                const snapshot = await db.collection('jobApplications').get();
+                let foundApp = null;
+                let foundDocId = null;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const appTokenId = (data.tokenId || data.applicationId || '').toUpperCase();
+                    if (appTokenId === tokenId) {
+                        foundApp = data;
+                        foundDocId = doc.id;
+                    }
+                });
+                
+                if (foundApp) {
+                    displayResult(foundApp, foundDocId);
+                } else {
+                    showNotFound('No application found with this Token ID. Please check and try again.');
+                }
+                
+            } catch (error) {
+                console.error("Search error:", error);
+                showError('Error searching. Please try again.');
+            }
+        }
+        
+        // Search by Mobile Number
+        async function searchByMobile() {
+            const mobile = mobileInput.value.trim();
+            
+            if (!mobile || !/^\d{10}$/.test(mobile)) {
+                showError('Please enter a valid 10-digit mobile number');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // Search in jobApplications collection where mobile matches
+                const snapshot = await db.collection('jobApplications').get();
+                const foundApps = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const appMobile = data.mobile || data.contactNumber || '';
+                    if (appMobile === mobile) {
+                        foundApps.push({ ...data, docId: doc.id });
+                    }
+                });
+                
+                if (foundApps.length === 0) {
+                    showNotFound('No application found with this mobile number. Please check and try again.');
+                } else if (foundApps.length === 1) {
+                    displayResult(foundApps[0], foundApps[0].docId);
+                } else {
+                    displayMultipleResults(foundApps);
+                }
+                
+            } catch (error) {
+                console.error("Search error:", error);
+                showError('Error searching. Please try again.');
+            }
+        }
+        
+        // Add event listeners
+        searchByTokenBtn.addEventListener('click', searchByTokenId);
+        searchByMobileBtn.addEventListener('click', searchByMobile);
+        
+        // Enter key support
+        tokenIdInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchByTokenId();
+            }
+        });
+        mobileInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchByMobile();
+            }
+        });
+        
+        // Tab switching
+        document.querySelectorAll('.search-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabType = this.dataset.tab;
+                document.querySelectorAll('.search-form').forEach(form => form.classList.remove('active'));
+                document.getElementById(`${tabType}Search`).classList.add('active');
+                resultCard.classList.remove('show');
+                
+                // Clear inputs when switching tabs
+                if (tabType === 'token') {
+                    tokenIdInput.value = '';
+                } else {
+                    mobileInput.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
